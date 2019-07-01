@@ -7,12 +7,79 @@ jenkins:
   ## ref: https://github.com/kubernetes/charts/tree/master/stable/jenkins
   enabled: true
 
+  persistence:
+      enabled: false
+
   master:
+    serviceType: NodePort
+
+    imageTag: "2.181"
+    
     installPlugins:
       - remoting-kafka:1.1.3
+      - workflow-aggregator:2.6
+      - job-dsl:1.74
+
+    nodePort: 31465
+
+    initScripts:
+      - |
+        import io.jenkins.plugins.remotingkafka.KafkaSecretManager
+        import jenkins.model.Jenkins
+        import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition
+        import org.jenkinsci.plugins.workflow.job.WorkflowJob
+
+        import javax.crypto.spec.SecretKeySpec
+
+        println("-- Configuring the agent secret");
+        KafkaSecretManager.AGENT_SECRET.@key = new SecretKeySpec(new byte[10], "HmacSHA256");
+
+    sidecars:
+      configAutoReload:
+        enabled: true
+
+    JCasC:
+      enabled: true
+      pluginVersion: "1.20"
+      configScripts:
+        remoting-kafka: |
+          unclassified:
+            kafka:
+              brokerURL: demo-kafka:9092
+              zookeeperURL: demo-zookeeper:2181
+
+          jobs:
+            - script: >
+                pipelineJob('demo_hello') {
+                    definition {
+                        cps {
+                            sandbox()
+                            script("""
+                                node('test') {
+                                  sh "echo Hello World"
+                                }
+                            """.stripIndent())
+                        }
+                    }
+                }
 
 kafka:
   ## If true, install the Kafka chart alongside
   ## ref: https://github.com/kubernetes/charts/tree/master/incubator/kafka
   enabled: true
+
+  external:
+    enabled: true
+
+  ## Kafka replicas
+  replicas: 1
+
+  envOverrides:
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+
+  persistence:
+    enabled: false
+
+  zookeeper:
+    replicaCount: 1
   

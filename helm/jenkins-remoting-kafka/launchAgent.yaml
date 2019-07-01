@@ -1,0 +1,12 @@
+jenkins:
+  master:
+    JCasC:
+      configScripts:
+        launch-agent: |
+          jenkins:
+            nodes:
+              - permanent:
+                  name: "test"
+                  remoteFS: "/home/jenkins"
+                  launcher:
+                    kafka: {}

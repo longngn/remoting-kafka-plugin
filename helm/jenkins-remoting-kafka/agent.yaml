@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demo-jenkins-remoting-kafka-agent
+spec:
+  containers:
+    - name: agent
+      image: jenkins/remoting-kafka-agent:latest
+      args: 
+        - -name 
+        - test 
+        - -master 
+        - http://demo-jenkins:8080/
+        - -secret 
+        - 43b0cef99265f9e34c10ea9d3501926d27b39f57c6d674561d8ba236e7a819fb
+        - -kafkaURL 
+        - demo-kafka:9092
+        - -noauth
