@@ -49,7 +49,7 @@ public final class KafkaClientListener implements Runnable {
         while (!shuttingDown) {
             TopicPartition partition = new TopicPartition(consumerTopic, consumerPartition);
             consumer.assign(Arrays.asList(partition));
-            while (true) {
+            while (false) {
                 // Wait from master.
                 ConsumerRecords<String, byte[]> records = consumer.poll(0);
                 consumer.commitSync();
